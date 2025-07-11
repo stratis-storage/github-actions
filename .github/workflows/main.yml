@@ -1,0 +1,24 @@
+---
+name: CI
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    container:
+      image: fedora:41  # CURRENT DEVELOPMENT ENVIRONMENT
+    steps:
+      - name: Install dependencies for Fedora
+        run: dnf install -y yamllint
+      - name: Run yamllint check
+        run: make yamllint
