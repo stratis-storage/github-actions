@@ -19,7 +19,6 @@ runs:
         # Stratis project dependencies specified in Cargo.toml
         DEPENDENCIES=("devicemapper" "libblkid-rs" "libcryptsetup-rs-sys" "libcryptsetup-rs" "loopdev-3")
         REPOS=("devicemapper-rs" "libblkid-rs" "libcryptsetup-rs" "libcryptsetup-rs" "loopdev-3")
-        TREE_ARGS=()
         for (( i=0; i<${#REPOS[@]}; i++ )); do
           dependency=${DEPENDENCIES[$i]}
           repo=${REPOS[$i]}
@@ -28,7 +27,6 @@ runs:
           cargo add $dependency --git https://github.com/mulkieran/$repo --branch $GITHUB_HEAD_REF
           mulkieran=$?
           (( jbaublitz == 0 &&  mulkieran == 0)) && { echo "Duplicate $repo branches"; exit 1; }
-          TREE_ARGS+=(--invert=$dependency)
         done
-        cargo tree ${TREE_ARGS[@]}
+        git diff
       working-directory: ${{ inputs.working-directory }}
