@@ -30,14 +30,17 @@ runs:
         ref: ${{ github.head_ref }}
     - name: Check if both checkouts succeeded
       if: github.event_name == 'pull_request' && steps.jbaublitz.outcome == 'success' && steps.mulkieran.outcome == 'success'
+      shell: bash
       run: |
         echo "Branch conflict!"
         exit 1
     - name: Conditionally make jbaublitz checkout branch the chosen one
       if: github.event_name == 'pull_request' && steps.jbaublitz.outcome == 'success'
+      shell: bash
       run: mv jbaublitz ${{ inputs.repo }}
     - name: Conditionally make mulkieran checkout branch the chosen one
       if: github.event_name == 'pull_request' && steps.mulkieran.outcome == 'success'
+      shell: bash
       run: mv mulkieran ${{ inputs.repo }}
     - name: Check out stratis-storage repo if no alternative branch was checked out
       if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && steps.mulkieran.outcome == 'failure' && steps.jbaublitz.outcome == 'failure')
