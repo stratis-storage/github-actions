@@ -19,6 +19,7 @@ jobs:
       image: fedora:41  # CURRENT DEVELOPMENT ENVIRONMENT
     steps:
       - name: Install dependencies for Fedora
-        run: dnf install -y yamllint
+        run: dnf install -y make yamllint
+      - uses: actions/checkout@v4
       - name: Run yamllint check
         run: make yamllint
