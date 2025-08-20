@@ -14,7 +14,7 @@ runs:
       if: github.event_name == 'pull_request'
       id: jbaublitz
       continue-on-error: true
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: jbaublitz/${{ inputs.repo }}
         path: jbaublitz
@@ -23,7 +23,7 @@ runs:
       if: github.event_name == 'pull_request'
       id: mulkieran
       continue-on-error: true
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: mulkieran/${{ inputs.repo }}
         path: mulkieran
@@ -44,7 +44,7 @@ runs:
       run: mv mulkieran ${{ inputs.repo }}
     - name: Check out stratis-storage repo if no alternative branch was checked out
       if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && steps.mulkieran.outcome == 'failure' && steps.jbaublitz.outcome == 'failure')
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: stratis-storage/${{ inputs.repo }}
         path: ${{ inputs.repo }}
