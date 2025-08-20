@@ -19,6 +19,7 @@ runs:
         repository: jbaublitz/${{ inputs.repo }}
         path: jbaublitz
         ref: ${{ github.head_ref }}
+        persist-credentials: false
     - name: Check out mulkieran/${{ inputs.repo }}
       if: github.event_name == 'pull_request'
       id: mulkieran
@@ -28,6 +29,7 @@ runs:
         repository: mulkieran/${{ inputs.repo }}
         path: mulkieran
         ref: ${{ github.head_ref }}
+        persist-credentials: false
     - name: Check if both checkouts succeeded
       if: github.event_name == 'pull_request' && steps.jbaublitz.outcome == 'success' && steps.mulkieran.outcome == 'success'
       shell: bash
@@ -49,3 +51,4 @@ runs:
         repository: stratis-storage/${{ inputs.repo }}
         path: ${{ inputs.repo }}
         ref: master
+        persist-credentials: false
