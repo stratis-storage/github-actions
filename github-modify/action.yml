@@ -6,6 +6,10 @@ inputs:
   repo:
     description: "The name of the GitHub repo"
     required: true
+  default_branch:
+    description: "The default branch to check out if no overrides"
+    required: false
+    default: 'master'
 runs:
   using: "composite"
   steps:
@@ -49,5 +53,5 @@ runs:
       with:
         repository: stratis-storage/${{ inputs.repo }}
         path: ${{ inputs.repo }}
-        ref: master
+        ref: ${{ inputs.default_branch }}
         persist-credentials: false
