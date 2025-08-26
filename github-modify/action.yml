@@ -6,7 +6,6 @@ inputs:
   repo:
     description: "The name of the GitHub repo"
     required: true
-    type: string
 runs:
   using: "composite"
   steps:
