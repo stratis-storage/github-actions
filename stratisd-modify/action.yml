@@ -7,7 +7,6 @@ inputs:
     description: "The working directory for this action"
     required: false
     default: '.'
-    type: string
 runs:
   using: "composite"
   steps:
