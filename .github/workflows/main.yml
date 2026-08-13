@@ -13,30 +13,6 @@ on:
 
 jobs:
   checks:
-    runs-on: ubuntu-24.04
-    container:
-      image: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
-    steps:
-      - name: Install dependencies for Fedora
-        run: dnf install -y make yamllint
-      - uses: actions/checkout@v4
-      - name: Run yamllint check
-        run: make yamllint
-
-  rust_dependent_checks:
-    runs-on: ubuntu-latest
-    container: fedora:43  # CURRENT DEVELOPMENT ENVIRONMENT
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - name: Install dependencies
-        run: dnf install -y clang curl make
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          components: cargo
-      - uses: baptiste0928/cargo-install@v3
-        with:
-          crate: typos-cli
-      - name: Run test
-        run: make -f Makefile check-typos
+    uses: $/.github/workflows/reusable_general.yml
+    with:
+      fedora-container-image-number: 43  # CURRENT DEVELOPMENT ENVIRONMENT
