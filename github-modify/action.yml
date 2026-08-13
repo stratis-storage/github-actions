@@ -1,5 +1,4 @@
 ---
-# yamllint disable rule:line-length
 name: 'Modify external repo to checkout from'
 description: "Modify external repo to check out from"
 inputs:
