@@ -1,5 +1,4 @@
 ---
-# yamllint disable rule:line-length
 name: 'Modify stratisd checkout'
 description: "Modify stratisd checked out files as necessary"
 inputs:
