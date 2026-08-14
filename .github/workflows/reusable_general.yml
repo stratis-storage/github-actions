@@ -1,0 +1,32 @@
+---
+name: Reusable Checks that are repo-language agnostic
+
+on:
+  workflow_call:
+    inputs:
+      fedora-container-image-number:
+        description: "Fedora Container Image Number"
+        required: true
+        type: number
+
+jobs:
+  general_checks:
+    runs-on: ubuntu-latest
+    container: fedora:${{ inputs.fedora-container-image-number }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Install dependencies
+        run: dnf install -y clang curl make yamllint
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: cargo
+          toolchain: stable
+      - uses: baptiste0928/cargo-install@v3
+        with:
+          crate: typos-cli
+      - name: Run typos check
+        run: make -f Makefile check-typos
+      - name: Run yamllint check
+        run: make -f Makefile yamllint
