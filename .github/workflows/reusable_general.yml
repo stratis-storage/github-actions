@@ -12,7 +12,8 @@ on:
 jobs:
   general_checks:
     runs-on: ubuntu-latest
-    container: fedora:${{ inputs.fedora-container-image-number }}
+    container:
+      image: quay.io/fedora/fedora:${{ inputs.fedora-container-image-number }}
     steps:
       - uses: actions/checkout@v6
         with:
