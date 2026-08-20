@@ -20,13 +20,9 @@ jobs:
           persist-credentials: false
       - name: Install dependencies
         run: dnf install -y clang curl make yamllint
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: taiki-e/install-action@v2
         with:
-          components: cargo
-          toolchain: stable
-      - uses: baptiste0928/cargo-install@v3
-        with:
-          crate: typos-cli
+          tool: typos-cli
       - name: Run typos check
         run: make -f Makefile check-typos
       - name: Run yamllint check
