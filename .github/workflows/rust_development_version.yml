@@ -1,0 +1,111 @@
+---
+name: Increase current Rust development version
+
+on:
+  workflow_call:
+    inputs:
+      fedora-container-image-number:
+        description: "Fedora Container Image Number"
+        required: true
+        type: number
+
+jobs:
+  increase_rust_current_development_version:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/fedora/fedora:${{ inputs.fedora-container-image-number }}
+    steps:
+      - name: Install dependencies
+        run: dnf install -y curl git make rpmdevtools toml-cli
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a
+        with:
+          persist-credentials: false
+      - name: Configure workspace as a safe directory
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Compare stable and current version
+        id: vercmp
+        run: |
+          CURRENT_VERSION=$(toml get --toml-path rust-toolchain.toml toolchain.channel)
+          curl --silent --fail --show-error --connect-timeout 20 --max-time 20 https://static.rust-lang.org/dist/channel-rust-stable.toml  -o channel-rust-stable.toml
+          STABLE_VERSION=$(toml get --toml-path channel-rust-stable.toml pkg.rust.version | cut -d " " -f 1)
+          rm channel-rust-stable.toml
+
+          set +e
+          rpmdev-vercmp "$CURRENT_VERSION" "$STABLE_VERSION"
+          CMP_RESULT=$?
+          set -e
+
+          if [ $CMP_RESULT -eq 12 ]; then
+            echo "needs_update=true" >> "$GITHUB_OUTPUT"
+            toml set --toml-path rust-toolchain.toml toolchain.channel "$STABLE_VERSION"
+            git add rust-toolchain.toml
+            git commit -m "Update CURRENT DEVELOPMENT RUST TOOLCHAIN to $STABLE_VERSION"
+            echo "ver=$STABLE_VERSION" >> "$GITHUB_OUTPUT"
+          elif [ $CMP_RESULT -eq 11 ]; then
+            echo "Current version ($CURRENT_VERSION) > stable version ($STABLE_VERSION)"
+            exit 1
+          elif [ $CMP_RESULT -eq 0 ]; then
+            echo "Current version ($CURRENT_VERSION) == stable version ($STABLE_VERSION)"
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+          else
+            exit 1
+          fi
+      - name: Install rust
+        if: steps.vercmp.outputs.needs_update == 'true'
+        uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659
+        with:
+          components: cargo, clippy
+      - name: Install stratisd dependencies
+        if: steps.vercmp.outputs.needs_update == 'true'
+        run: >
+          dnf install -y
+          clang
+          cryptsetup-devel
+          device-mapper-devel
+          libblkid-devel
+          systemd-devel
+      - name: Run clippy
+        if: steps.vercmp.outputs.needs_update == 'true'
+        id: clippy
+        run: |
+          set +e
+          CLIPPY_FIX=1 make clippy && make clippy
+          CLIPPY_RESULT=$?
+          set -e
+
+          if [ "$CLIPPY_RESULT" -eq 0 ]; then
+            git add -u
+            git commit --amend --no-edit
+
+            cat << 'EOF' > .git/pr_body.txt
+
+          ### Clippy automatically applied all fixes and exited with no errors.
+          Review all the changes before approving the PR. It is possible that
+          the changes introduce defects, e.g., shortened lifetimes, or are
+          otherwise erroneous.
+          EOF
+          else
+            cargo clean
+            git clean -xdf
+            cat << 'EOF' > .git/pr_body.txt
+
+          ### Clippy attempted to apply some fixes and exited with an error.
+          Check out the PR in your local copy, run 'make clippy' and resolve
+          the reported lints manually.
+          EOF
+          fi
+      - name: Create PR
+        if: steps.vercmp.outputs.needs_update == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+        with:
+          base: master
+          title: "Set CURRENT DEVELOPMENT RUST TOOLCHAIN to ${{ steps.vercmp.outputs.ver }}"
+          body-path: .git/pr_body.txt
+          branch: rust-toolchain-update-${{ github.run_id }}
+          draft: true
