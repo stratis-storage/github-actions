@@ -1,0 +1,21 @@
+---
+name: 'Override rust version with MSRV'
+description: "Override rust version with MSRV"
+inputs:
+  working-directory:
+    description: "The working directory for this action"
+    required: false
+    default: '.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set rustup override to MSRV
+      shell: bash
+      run: |
+        CRATE=$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[0].name')
+        MSRV=$(cargo metadata --format-version 1 --no-deps | jq -r --arg CRATE "$CRATE" '
+          .packages[] | select(.name == $CRATE) | .rust_version // empty
+        ')
+        rustup override set "$MSRV"
+      working-directory: ${{ inputs.working-directory }}
