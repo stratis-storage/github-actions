@@ -16,3 +16,7 @@ jobs:
     uses: ./.github/workflows/reusable_general.yml
     with:
       fedora-container-image-number: 44  # CURRENT DEVELOPMENT ENVIRONMENT
+  commit-checks:
+    uses: ./.github/workflows/commits.yml
+    with:
+      fedora-container-image-number: 44  # CURRENT DEVELOPMENT ENVIRONMENT
